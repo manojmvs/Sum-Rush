@@ -383,7 +383,109 @@ button{font:inherit}
   text-shadow:0 2px 5px rgba(0,0,0,.4);
 }
 
+
+.completion-stats{display:none;margin:18px auto;padding:16px 24px;width:min(430px,90%);border-radius:20px;background:rgba(255,255,255,.96);box-shadow:0 10px 28px rgba(0,0,0,.2);text-align:center}
+.completion-stats.show{display:none;animation:completionPop .35s ease-out}
+.completion-title{font-family:"Arial Black",Impact,sans-serif;font-size:1.35rem;font-weight:1000;background:linear-gradient(90deg,#ff3b30,#ff9500,#34c759,#007aff,#af52de);-webkit-background-clip:text;background-clip:text;color:transparent}
+.completion-time{margin-top:7px;font-size:1rem;font-weight:700}
+@keyframes completionPop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+
+/* Live gameplay timer */
+.game-timer{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:120px;
+  margin:8px auto 14px;
+  padding:8px 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,.94);
+  color:#222;
+  font-family:"Arial Black",Impact,sans-serif;
+  font-size:1.05rem;
+  font-weight:900;
+  box-shadow:0 5px 14px rgba(0,0,0,.16);
+}
+#timerValue{font-variant-numeric:tabular-nums}
+
+/* Full end screen */
+.end-screen{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.68);
+  backdrop-filter:blur(7px);
+}
+.end-screen.show{display:flex}
+.end-card{
+  width:min(500px,94vw);
+  padding:30px 24px 26px;
+  border-radius:28px;
+  background:#fff;
+  text-align:center;
+  box-shadow:0 25px 80px rgba(0,0,0,.4);
+  animation:endPop .3s ease-out;
+}
+.end-trophy{font-size:3.4rem;margin-bottom:5px}
+.end-card h2{
+  margin:0;
+  font-family:"Arial Black",Impact,sans-serif;
+  font-size:clamp(1.7rem,6vw,2.5rem);
+  font-weight:1000;
+  background:linear-gradient(90deg,#ff3b30,#ff9500,#34c759,#007aff,#af52de);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.end-message{margin:10px 0 18px;font-weight:600;color:#555}
+.final-time{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  margin:0 auto 22px;
+  padding:14px;
+  border-radius:18px;
+  background:#f3f5f8;
+}
+.final-time span{font-size:.9rem;font-weight:700;color:#666}
+.final-time strong{
+  font-family:"Arial Black",Impact,sans-serif;
+  font-size:2rem;
+  color:#222;
+}
+.end-actions{
+  display:grid;
+  grid-template-columns:1fr 1.4fr;
+  gap:10px;
+}
+.end-btn{
+  border:0;
+  border-radius:14px;
+  padding:14px 12px;
+  font-weight:900;
+  font-size:.95rem;
+  cursor:pointer;
+  color:#fff;
+}
+.reset-end-btn{background:#555}
+.next-end-btn{background:linear-gradient(135deg,#ff9500,#ff3b30)}
+@keyframes endPop{
+  from{opacity:0;transform:translateY(15px) scale(.95)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(max-width:480px){
+  .end-actions{grid-template-columns:1fr}
+  .game-timer{font-size:.95rem}
+}
+
 </style>
+
+
 </head>
 <body>
 
@@ -391,11 +493,9 @@ button{font:inherit}
 <section id="home" class="screen active">
   <div class="home-wrap">
     <h1>SUM RUSH</h1>
-    <br>
 <div class="home-subtitle">Pick 4 Numbers. Hit the Target.</div>
     
     <div class="choose">CHOOSE YOUR CHALLENGE</div>
-
 
 <div class="categories">
       <button class="category" onclick="startGame(100)">
@@ -415,16 +515,13 @@ button{font:inherit}
       </button>
     </div>
 
-    <!-- <button class="how" onclick="showHelp()">HOW TO PLAY</button> -->
-      <div id="howToPlayModal" class="how-to-play-modal" onclick="closeHowToPlay(event)">
+   <button class="how-to-play-btn" onclick="showHowToPlay()">How to Play</button>
+
+<div id="howToPlayModal" class="how-to-play-modal" onclick="closeHowToPlay(event)">
   <div class="how-to-play-card" onclick="event.stopPropagation()">
     <button class="close-how-to-play" onclick="hideHowToPlay()">×</button>
     <h2>How to Play</h2>
-    <!-- <p><strong>1.</strong> Add any 4 numbers from grid to match the exact count.</p>
-    <p><strong>2.</strong> Drag the numbers into the boxes to get the sum count.</p>
-    <p><strong>3.</strong> Click on <strong>Next Challenge</strong> to continue the game.</p> -->
-
-  <p>  Step 1 – Choose a Target
+    <p>  Step 1 – Choose a Target
 Select one of the three categories: 100, 500, or 1000.</p>
 
 <p>Step 2 – View the Numbers
@@ -446,9 +543,13 @@ When the sum matches the target, you successfully complete the challenge! 🎉</
 Click NEXT CHALLENGE to receive a new set of numbers and continue playing.</p>
   </div>
 </div>
-
-<button class="how-to-play-btn" onclick="showHowToPlay()">How to Play</button>
   </div>
+
+<div id="completionStats" class="completion-stats">
+  <div class="completion-title">LEVEL COMPLETED!</div>
+  <div class="completion-time">Completion Time: <strong id="completionTime">0.0 sec</strong></div>
+</div>
+
 </section>
 
 <!-- GAME SCREEN -->
@@ -459,6 +560,10 @@ Click NEXT CHALLENGE to receive a new set of numbers and continue playing.</p>
       <div class="game-title" id="gameTitle">SUM OF 100</div>
       <button class="topbtn new" onclick="newChallenge()">New Challenge</button>
     </div>
+
+    <div class="game-timer" id="gameTimer">
+  ⏱ <span id="timerValue">00 : 00</span>
+</div>
 
     <div class="instruction">Drag exactly four numbers into the boxes to make</div>
     <div class="target" id="target">100</div>
@@ -480,7 +585,7 @@ Click NEXT CHALLENGE to receive a new set of numbers and continue playing.</p>
       <button class="action" onclick="resetGame()">Reset</button>
       <button class="action primary" onclick="newChallenge()">New Challenge</button>
     </div>
-    <div class="score">Solved: <b id="score">0</b></div>
+    <!-- <div class="score">Solved: <b id="score">0</b></div> -->
   </div>
 </section>
 
@@ -492,8 +597,10 @@ let slots=[null,null,null,null];
 let score=0;
 let previous='';
 let drag=null;
+let levelStartTime=0, levelEndTime=0, levelCompleted=false;
 
 function startGame(t){
+  startLiveTimer();
   target=t;
   document.getElementById('home').classList.remove('active');
   document.getElementById('game').classList.add('active');
@@ -555,6 +662,9 @@ function generateChallenge(){
 }
 
 function newChallenge(){
+  hideEndScreen();
+  startLiveTimer();
+  const cs=document.getElementById("completionStats"); if(cs) cs.classList.remove("show");
   values=generateChallenge();
   previous=values.join(',');
   slots=[null,null,null,null];
@@ -576,10 +686,11 @@ function update(){
   sum.textContent=total;
 
   if(filled===4 && total===target){
+    showEndScreen();
     sum.classList.add('success');
     document.getElementById('message').textContent=
       '🎉 PERFECT! You made '+target+'!';
-    score++;
+    if(!levelCompleted) score++;
     document.getElementById('score').textContent=score;
     celebrate();
   }else{
@@ -719,6 +830,136 @@ function closeHowToPlay(event){
   if(event.target && event.target.id==='howToPlayModal') hideHowToPlay();
 }
 
+
+function showCompletionTime(){
+  levelEndTime=performance.now();
+  const seconds=(levelEndTime-levelStartTime)/1000;
+  const text=seconds<60 ? seconds.toFixed(1)+" sec" :
+    Math.floor(seconds/60)+" min "+Math.round(seconds%60)+" sec";
+  const t=document.getElementById("completionTime");
+  const p=document.getElementById("completionStats");
+  if(t) t.textContent=text;
+  if(p) p.classList.add("show");
+}
+
+
+let timerInterval=null;
+
+function startLiveTimer(){
+  if(timerInterval) clearInterval(timerInterval);
+  levelStartTime=performance.now();
+  levelEndTime=0;
+  levelCompleted=false;
+  const timer=document.getElementById("timerValue");
+  if(timer) timer.textContent="00 : 00";
+  timerInterval=setInterval(updateLiveTimer,100);
+}
+
+function updateLiveTimer(){
+  if(!levelStartTime) return;
+  const elapsed=Math.max(0,Math.floor((performance.now()-levelStartTime)/1000));
+  const mins=Math.floor(elapsed/60);
+  const secs=elapsed%60;
+  const timer=document.getElementById("timerValue");
+  if(timer){
+    timer.textContent=String(mins).padStart(2,"0")+" : "+String(secs).padStart(2,"0");
+  }
+}
+
+function stopLiveTimer(){
+  if(!levelEndTime) levelEndTime=performance.now();
+  updateLiveTimer();
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval=null;
+  }
+}
+
+function showEndScreen(){
+  if(levelCompleted) return;
+  levelCompleted=true;
+  stopLiveTimer();
+
+  const elapsed=Math.max(0,Math.floor((levelEndTime-levelStartTime)/1000));
+  const mins=Math.floor(elapsed/60);
+  const secs=elapsed%60;
+  const text=String(mins).padStart(2,"0")+" : "+String(secs).padStart(2,"0");
+
+  const finalTime=document.getElementById("finalTime");
+  if(finalTime) finalTime.textContent=text;
+
+  const end=document.getElementById("endScreen");
+  if(end) end.classList.add("show");
+}
+
+function hideEndScreen(){
+  const end=document.getElementById("endScreen");
+  if(end) end.classList.remove("show");
+}
+
+function resetFromEnd(){
+  // Close the completion screen and restart the SAME challenge.
+  hideEndScreen();
+
+  // Clear the actual game slots used by SUM RUSH.
+  slots=[null,null,null,null];
+  levelCompleted=false;
+
+  // Reset the live sum/message and redraw the four empty boxes.
+  const sum=document.getElementById("sum");
+  if(sum){
+    sum.textContent="0";
+    sum.classList.remove("success");
+  }
+
+  const message=document.getElementById("message");
+  if(message) message.textContent="Choose four numbers.";
+
+  // Reset the timer to 00 : 00 and start immediately.
+  startLiveTimer();
+
+  // Re-render the current puzzle with all four slots empty.
+  renderNumbers();
+  renderSlots();
+}
+
+function nextFromEnd(){
+  hideEndScreen();
+  levelCompleted=false;
+  if(typeof newChallenge==="function") newChallenge();
+  else startLiveTimer();
+}
+
 </script>
+
+<div id="endScreen" class="end-screen">
+  <div class="end-card">
+    <div class="end-trophy">🏆</div>
+    <h2>LEVEL COMPLETED!</h2>
+    <p class="end-message">Great job! You reached the exact target.</p>
+    <div class="final-time">
+      <span>Completion Time</span>
+      <strong id="finalTime">00 : 00</strong>
+    </div>
+    <div class="end-actions">
+      <button class="end-btn reset-end-btn" onclick="resetFromEnd()">RESET</button>
+      <button class="end-btn next-end-btn" onclick="nextFromEnd()">NEXT CHALLENGE</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
+
+<style>
+#timerValue{
+  font-variant-numeric:tabular-nums;
+  letter-spacing:2px;
+  min-width:92px;
+  text-align:center;
+}
+.game-timer{
+  font-family:"Arial Black",Impact,sans-serif;
+  font-weight:900;
+}
+</style>
