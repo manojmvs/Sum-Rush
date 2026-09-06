@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SUM Rush</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;font-family:Arial,Helvetica,sans-serif}
+body{
+  background:
+    radial-gradient(circle at 50% -10%,#2185a8 0,#0b5273 30%,#06344f 62%,#021b2b 100%);
+  color:#fff;
+}
+button{font:inherit}
+.screen{min-height:100vh;display:none}
+.screen.active{display:flex}
+
+/* MAIN SCREEN */
+#home{
+  align-items:center;
+  justify-content:center;
+  padding:28px 16px;
+}
+.home-wrap{
+  width:min(920px,100%);
+  text-align:center;
+}
+.brand{
+  font-size:clamp(38px,8vw,76px);
+  line-height:.95;
+  font-weight:1000;
+  letter-spacing:-2px;
+  margin:0;
+  text-shadow:0 5px 0 rgba(0,0,0,.22);
+}
+.brand span{color:#ffc928}
+.home-subtitle{
+  font-size:clamp(16px,3vw,25px);
+  margin:16px 0 30px;
+  opacity:.92;
+}
+.choose{
+  font-size:clamp(18px,3vw,27px);
+  font-weight:900;
+  margin-bottom:18px;
+}
+.categories{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+  width:min(780px,100%);
+  margin:auto;
+}
+.category{
+  min-height:170px;
+  border:0;
+  border-radius:28px;
+  color:#fff;
+  cursor:pointer;
+  padding:22px;
+  box-shadow:0 9px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.4);
+  transition:transform .15s,box-shadow .15s;
+}
+.category:hover{transform:translateY(-4px)}
+.category:active{
+  transform:translateY(4px);
+  box-shadow:0 4px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.3);
+}
+.category:nth-child(1){background:linear-gradient(145deg,#ff8a19,#e63b25)}
+.category:nth-child(2){background:linear-gradient(145deg,#3194ff,#1458d8)}
+.category:nth-child(3){background:linear-gradient(145deg,#aa4be8,#7022b8)}
+.category:nth-child(4){background:linear-gradient(145deg,#21c7aa,#078a7c)}
+.cat-target{
+  font-size:clamp(45px,8vw,68px);
+  font-weight:1000;
+  line-height:1;
+  text-shadow:0 4px 0 rgba(0,0,0,.2);
+}
+.cat-name{
+  margin-top:10px;
+  font-size:clamp(20px,3.5vw,29px);
+  font-weight:1000;
+}
+.cat-desc{
+  margin-top:5px;
+  font-size:14px;
+  opacity:.9;
+}
+.how{
+  margin-top:25px;
+  padding:12px 22px;
+  border:2px solid rgba(255,255,255,.5);
+  border-radius:15px;
+  color:#fff;
+  background:rgba(255,255,255,.08);
+  cursor:pointer;
+  font-weight:800;
+}
+
+/* GAME SCREEN */
+#game{
+  align-items:flex-start;
+  justify-content:center;
+  padding:18px max(12px,4vw) 30px;
+}
+.game-wrap{width:min(900px,100%);text-align:center}
+.topbar{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:10px;
+}
+.topbtn{
+  border:0;
+  border-radius:12px;
+  padding:10px 14px;
+  color:#fff;
+  background:rgba(255,255,255,.13);
+  cursor:pointer;
+  font-weight:900;
+}
+.game-title{font-weight:1000;font-size:clamp(15px,3vw,23px)}
+.instruction{margin-top:14px;font-size:15px;opacity:.85}
+.target{
+  color:#ffc928;
+  font-size:clamp(64px,13vw,105px);
+  line-height:1;
+  font-weight:1000;
+  margin:4px 0 10px;
+  text-shadow:0 6px 0 #a75b00,0 0 25px rgba(255,201,40,.3);
+}
+.drop-area{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  padding:13px;
+  border:2px solid #63e7ff;
+  border-radius:23px;
+  background:rgba(0,20,35,.35);
+}
+.slot{
+  height:105px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:3px dashed rgba(255,255,255,.55);
+  border-radius:18px;
+  background:rgba(255,255,255,.06);
+  transition:.15s;
+}
+.slot.over{
+  border-color:#ffc928;
+  background:rgba(255,201,40,.16);
+  transform:scale(1.03);
+}
+.placeholder{font-size:14px;opacity:.5}
+.sum-label{font-size:13px;opacity:.7;margin-top:12px}
+.sum{font-size:clamp(40px,8vw,60px);font-weight:1000}
+.sum.success{color:#7dff9d;text-shadow:0 0 20px rgba(125,255,157,.65)}
+.message{min-height:27px;font-weight:900;margin:3px 0 12px}
+.numbers{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+.tile{
+  height:90px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:18px;
+  color:#fff;
+  font-size:clamp(28px,6vw,46px);
+  font-weight:1000;
+  cursor:grab;
+  touch-action:none;
+  box-shadow:0 7px 0 rgba(0,0,0,.28),inset 0 2px 0 rgba(255,255,255,.35);
+}
+.tile.used{opacity:.2;filter:grayscale(1);cursor:default;box-shadow:none}
+.c1{background:#ff7b16}.c2{background:#ed3030}.c3{background:#1677ed}
+.c4{background:#25b94c}.c5{background:#8c32dc}.c6{background:#f0aa08}
+.c7{background:#13aee8}.c8{background:#e62c77}.c9{background:#10a99c}
+.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.action{
+  border:0;border-radius:14px;padding:13px 20px;
+  font-weight:900;cursor:pointer;background:#fff;color:#07324a
+}
+.action.primary{background:#ffc928}
+.score{font-size:14px;opacity:.75;margin-top:10px}
+.drag-ghost{
+  position:fixed;z-index:9999;pointer-events:none;
+  transform:translate(-50%,-50%) scale(1.08);
+  width:105px;height:75px;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:38px;font-weight:1000;color:#fff;
+  box-shadow:0 12px 30px rgba(0,0,0,.4)
+}
+.confetti{
+  position:fixed;top:-20px;width:9px;height:15px;z-index:10000;
+  animation:fall 1.8s linear forwards
+}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+@media(max-width:600px){
+  #home{padding:18px 12px 25px}
+  .home-subtitle{margin:12px 0 22px}
+  .categories{grid-template-columns:1fr;gap:10px}
+  .category{min-height:118px;padding:16px 10px;border-radius:20px}
+  .cat-target{font-size:42px}
+  .cat-name{font-size:19px;margin-top:7px}
+  .cat-desc{font-size:12px}
+  .drop-area{grid-template-columns:repeat(2,1fr);gap:8px;padding:9px}
+  .slot{height:82px;border-width:2px;border-radius:14px}
+  .numbers{gap:8px}
+  .tile{height:76px;border-radius:14px}
+  .topbar{grid-template-columns:auto 1fr}
+  .topbar .new{grid-column:2;justify-self:end;grid-row:1}
+  .game-title{grid-column:1 / -1;grid-row:2}
+}
+@media(max-width:370px){
+  .categories{grid-template-columns:1fr}
+  .category{min-height:105px}
+  .cat-target,.cat-name{display:inline}
+  .cat-target{font-size:34px;margin-right:8px}
+  .cat-desc{display:none}
+  .tile{height:68px;font-size:27px}
+  .slot{height:75px}
+}
+@media(orientation:landscape) and (max-height:560px){
+  #home{padding:12px}
+  .brand{font-size:38px}
+  .home-subtitle{margin:7px 0 12px}
+  .choose{margin-bottom:8px}
+  .category{min-height:92px;padding:10px}
+  .cat-target{font-size:34px}
+  .cat-name{font-size:17px;margin-top:3px}
+  .cat-desc{display:none}
+}
+
+
+
+
+/* SUM RUSH toon-style title */
+.home h1, #home h1{
+  font-family: "Arial Black", Impact, system-ui, sans-serif;
+  font-size:clamp(3.4rem,9vw,7rem);
+  font-weight:1000;
+  line-height:.92;
+  letter-spacing:1px;
+  margin:8px 0 8px;
+  text-transform:uppercase;
+  color:#fff;
+  background:linear-gradient(180deg,#fff 0%,#fff7a8 18%,#ffd21f 48%,#ff7a00 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:
+    drop-shadow(0 4px 0 #7a2600)
+    drop-shadow(0 8px 0 #3d1600)
+    drop-shadow(0 12px 14px rgba(0,0,0,.35));
+  -webkit-text-stroke:3px rgba(71,24,0,.85);
+  paint-order:stroke fill;
+  transform:rotate(-1deg);
+}
+
+/* Tagline directly below title */
+.home-subtitle{
+  margin:4px auto 18px !important;
+  font-size:clamp(.95rem,2vw,1.25rem);
+  font-weight:800;
+  letter-spacing:.4px;
+  text-align:center;
+  color:#fff;
+  text-shadow:0 2px 4px rgba(0,0,0,.35);
+}
+
+/* How to Play button */
+.how-to-play-btn{
+  border:0;
+  border-radius:999px;
+  padding:13px 30px;
+  margin:12px auto 22px;
+  display:block;
+  font-size:1rem;
+  font-weight:800;
+  color:#fff;
+  background:linear-gradient(135deg,#ff3b30,#ff9500,#af52de);
+  box-shadow:0 8px 22px rgba(0,0,0,.18);
+  cursor:pointer;
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.how-to-play-btn:hover{
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:0 12px 28px rgba(0,0,0,.24);
+}
+
+/* How to Play modal */
+.how-to-play-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.62);
+  backdrop-filter:blur(5px);
+}
+.how-to-play-modal.show{
+  display:flex;
+}
+.how-to-play-card{
+  width:min(520px,94vw);
+  position:relative;
+  padding:28px 30px;
+  border-radius:24px;
+  background:#fff;
+  color:#222;
+  box-shadow:0 24px 70px rgba(0,0,0,.35);
+  text-align:left;
+  animation:howPlayIn .2s ease-out;
+}
+.how-to-play-card h2{
+  margin:0 35px 18px 0;
+  font-size:1.8rem;
+  background:linear-gradient(90deg,#ff3b30,#ff9500,#34c759,#007aff,#af52de);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.how-to-play-card p{
+  margin:14px 0;
+  line-height:1.55;
+  font-size:1rem;
+}
+.close-how-to-play{
+  position:absolute;
+  top:10px;
+  right:14px;
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:50%;
+  background:#eee;
+  font-size:25px;
+  line-height:1;
+  cursor:pointer;
+}
+@keyframes howPlayIn{
+  from{opacity:0;transform:translateY(12px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(max-width:600px){
+  .home h1,#home h1{
+    letter-spacing:-1.5px;
+    font-size:clamp(2.8rem,15vw,4.5rem);
+  }
+  .how-to-play-card{padding:24px 20px}
+}
+
+
+/* Final SUM RUSH toon overrides */
+.home h1, #home h1{
+  font-family:"Arial Black",Impact,sans-serif !important;
+  text-transform:uppercase !important;
+  font-weight:1000 !important;
+  color:#fff !important;
+  background:linear-gradient(180deg,#ffffff 0%,#fff4a0 20%,#ffd21f 52%,#ff7200 100%) !important;
+  -webkit-background-clip:text !important;
+  background-clip:text !important;
+  -webkit-text-fill-color:transparent !important;
+  -webkit-text-stroke:3px #542000 !important;
+  paint-order:stroke fill !important;
+  filter:drop-shadow(0 4px 0 #a33b00) drop-shadow(0 8px 0 #3a1300) drop-shadow(0 12px 15px rgba(0,0,0,.35)) !important;
+  transform:rotate(-1deg);
+}
+.home-subtitle{
+  margin:4px auto 18px !important;
+  text-align:center !important;
+  color:#fff !important;
+  font-weight:800 !important;
+  text-shadow:0 2px 5px rgba(0,0,0,.4);
+}
+
+</style>
+</head>
+<body>
+
+<!-- MAIN SCREEN: THIS IS THE FIRST SCREEN -->
+<section id="home" class="screen active">
+  <div class="home-wrap">
+    <h1>SUM RUSH</h1>
+    <br>
+<div class="home-subtitle">Pick 4 Numbers. Hit the Target.</div>
+    
+    <div class="choose">CHOOSE YOUR CHALLENGE</div>
+
+
+<div class="categories">
+      <button class="category" onclick="startGame(100)">
+        <div class="cat-target">100</div>
+        <div class="cat-name">SUM OF 100</div>
+        <div class="cat-desc">Make 100 using exactly four numbers</div>
+      </button>
+      <button class="category" onclick="startGame(500)">
+        <div class="cat-target">500</div>
+        <div class="cat-name">SUM OF 500</div>
+        <div class="cat-desc">Make 500 using exactly four numbers</div>
+      </button>
+      <button class="category" onclick="startGame(1000)">
+        <div class="cat-target">1000</div>
+        <div class="cat-name">SUM OF 1000</div>
+        <div class="cat-desc">Make 1000 using exactly four numbers</div>
+      </button>
+    </div>
+
+    <!-- <button class="how" onclick="showHelp()">HOW TO PLAY</button> -->
+      <div id="howToPlayModal" class="how-to-play-modal" onclick="closeHowToPlay(event)">
+  <div class="how-to-play-card" onclick="event.stopPropagation()">
+    <button class="close-how-to-play" onclick="hideHowToPlay()">×</button>
+    <h2>How to Play</h2>
+    <p><strong>1.</strong> Add any 4 numbers from below to get the exact count.</p>
+    <p><strong>2.</strong> Drag the numbers into the boxes to get the sum count.</p>
+    <p><strong>3.</strong> Click on <strong>Next Challenge</strong> to continue the game.</p>
+  </div>
+</div>
+
+<button class="how-to-play-btn" onclick="showHowToPlay()">How to Play</button>
+  </div>
+</section>
+
+<!-- GAME SCREEN -->
+<section id="game" class="screen">
+  <div class="game-wrap">
+    <div class="topbar">
+      <button class="topbtn" onclick="goHome()">← Categories</button>
+      <div class="game-title" id="gameTitle">SUM OF 100</div>
+      <button class="topbtn new" onclick="newChallenge()">New Challenge</button>
+    </div>
+
+    <div class="instruction">Drag exactly four numbers into the boxes to make</div>
+    <div class="target" id="target">100</div>
+
+    <div class="drop-area">
+      <div class="slot" data-slot="0"><span class="placeholder">DROP HERE</span></div>
+      <div class="slot" data-slot="1"><span class="placeholder">DROP HERE</span></div>
+      <div class="slot" data-slot="2"><span class="placeholder">DROP HERE</span></div>
+      <div class="slot" data-slot="3"><span class="placeholder">DROP HERE</span></div>
+    </div>
+
+    <div class="sum-label">CURRENT SUM</div>
+    <div id="sum" class="sum">0</div>
+    <div id="message" class="message">Choose four numbers.</div>
+
+    <div id="numbers" class="numbers"></div>
+
+    <div class="controls">
+      <button class="action" onclick="resetGame()">Reset</button>
+      <button class="action primary" onclick="newChallenge()">New Challenge</button>
+    </div>
+    <div class="score">Solved: <b id="score">0</b></div>
+  </div>
+</section>
+
+<script>
+const COLORS=['c1','c2','c3','c4','c5','c6','c7','c8','c9'];
+let target=100;
+let values=[];
+let slots=[null,null,null,null];
+let score=0;
+let previous='';
+let drag=null;
+
+function startGame(t){
+  target=t;
+  document.getElementById('home').classList.remove('active');
+  document.getElementById('game').classList.add('active');
+  document.getElementById('target').textContent=t;
+  document.getElementById('gameTitle').textContent='SUM OF '+t;
+  newChallenge();
+}
+
+function goHome(){
+  document.getElementById('game').classList.remove('active');
+  document.getElementById('home').classList.add('active');
+}
+
+function showHelp(){
+  alert(
+    'HOW TO PLAY\\n\\n'+
+    '1. Choose SUM OF 100, 500 or 1000.\\n\\n'+
+    '2. A puzzle with 9 numbers will appear.\\n\\n'+
+    '3. Drag exactly four numbers into the four boxes.\\n\\n'+
+    '4. Make the Current Sum equal the target.\\n\\n'+
+    '5. Press New Challenge for a different puzzle.'
+  );
+}
+
+function generateChallenge(){
+  let arr,tries=0;
+  do{
+    // Generate four numbers whose sum is exactly the selected target.
+    const min=Math.max(10,Math.floor(target*.04));
+    const max=Math.floor(target*.30);
+
+    const a=min+Math.floor(Math.random()*(max-min+1));
+    const b=min+Math.floor(Math.random()*(max-min+1));
+    const c=min+Math.floor(Math.random()*(max-min+1));
+    const d=target-a-b-c;
+
+    if(d<min || d>Math.floor(target*.65)){
+      tries++;
+      continue;
+    }
+
+    arr=[a,b,c,d];
+
+    // Add five distractor numbers.
+    const distractorMin=Math.max(10,Math.floor(target*.05));
+    const distractorMax=Math.floor(target*.8);
+
+    while(arr.length<9){
+      const n=distractorMin+
+        Math.floor(Math.random()*(distractorMax-distractorMin+1));
+      if(!arr.includes(n)) arr.push(n);
+    }
+
+    arr.sort(()=>Math.random()-.5);
+    tries++;
+  }while(arr.join(',')===previous && tries<100);
+
+  return arr;
+}
+
+function newChallenge(){
+  values=generateChallenge();
+  previous=values.join(',');
+  slots=[null,null,null,null];
+  document.getElementById('message').textContent=
+    'Find four numbers that make '+target+'.';
+  update();
+}
+
+function resetGame(){
+  slots=[null,null,null,null];
+  document.getElementById('message').textContent='Choose four numbers.';
+  update();
+}
+
+function update(){
+  const filled=slots.filter(x=>x!==null).length;
+  const total=slots.reduce((s,i)=>s+(i===null?0:values[i]),0);
+  const sum=document.getElementById('sum');
+  sum.textContent=total;
+
+  if(filled===4 && total===target){
+    sum.classList.add('success');
+    document.getElementById('message').textContent=
+      '🎉 PERFECT! You made '+target+'!';
+    score++;
+    document.getElementById('score').textContent=score;
+    celebrate();
+  }else{
+    sum.classList.remove('success');
+    if(filled===4)
+      document.getElementById('message').textContent=
+        total<target?'Too low — try another combination.':
+        'Too high — try another combination.';
+    else
+      document.getElementById('message').textContent=
+        (4-filled)+' box'+(4-filled===1?'':'es')+' left';
+  }
+  renderNumbers();
+  renderSlots();
+}
+
+function renderNumbers(){
+  const box=document.getElementById('numbers');
+  box.innerHTML='';
+  values.forEach((value,index)=>{
+    const tile=document.createElement('div');
+    tile.className='tile '+COLORS[index]+(slots.includes(index)?' used':'');
+    tile.textContent=value;
+    tile.dataset.index=index;
+    if(!slots.includes(index))attachDrag(tile);
+    box.appendChild(tile);
+  });
+}
+
+function renderSlots(){
+  document.querySelectorAll('.slot').forEach((slot,i)=>{
+    slot.innerHTML='';
+    if(slots[i]===null){
+      slot.innerHTML='<span class="placeholder">DROP HERE</span>';
+      return;
+    }
+    const index=slots[i];
+    const tile=document.createElement('div');
+    tile.className='tile '+COLORS[index];
+    tile.textContent=values[index];
+    tile.dataset.index=index;
+    attachDrag(tile);
+    slot.appendChild(tile);
+  });
+}
+
+function attachDrag(element){
+  element.addEventListener('pointerdown',function(e){
+    e.preventDefault();
+
+    const index=Number(element.dataset.index);
+    const oldSlot=slots.indexOf(index);
+    if(oldSlot!==-1)slots[oldSlot]=null;
+
+    const ghost=element.cloneNode(true);
+    ghost.classList.remove('used');
+    ghost.classList.add('drag-ghost');
+    ghost.style.left=e.clientX+'px';
+    ghost.style.top=e.clientY+'px';
+    document.body.appendChild(ghost);
+
+    drag={index:index,oldSlot:oldSlot,ghost:ghost};
+
+    function move(ev){
+      ghost.style.left=ev.clientX+'px';
+      ghost.style.top=ev.clientY+'px';
+
+      document.querySelectorAll('.slot').forEach(slot=>{
+        const r=slot.getBoundingClientRect();
+        slot.classList.toggle(
+          'over',
+          ev.clientX>=r.left && ev.clientX<=r.right &&
+          ev.clientY>=r.top && ev.clientY<=r.bottom
+        );
+      });
+    }
+
+    function up(ev){
+      document.removeEventListener('pointermove',move);
+      document.removeEventListener('pointerup',up);
+      document.querySelectorAll('.slot').forEach(s=>s.classList.remove('over'));
+
+      const destination=[...document.querySelectorAll('.slot')].find(slot=>{
+        const r=slot.getBoundingClientRect();
+        return ev.clientX>=r.left && ev.clientX<=r.right &&
+               ev.clientY>=r.top && ev.clientY<=r.bottom;
+      });
+
+      ghost.remove();
+
+      if(destination){
+        const destinationIndex=Number(destination.dataset.slot);
+
+        if(slots[destinationIndex]!==null){
+          const displaced=slots[destinationIndex];
+          if(drag.oldSlot!==-1) slots[drag.oldSlot]=displaced;
+          else{
+            const empty=slots.findIndex(x=>x===null);
+            if(empty!==-1)slots[empty]=displaced;
+          }
+        }
+        slots[destinationIndex]=drag.index;
+      }else if(drag.oldSlot!==-1){
+        slots[drag.oldSlot]=drag.index;
+      }
+
+      drag=null;
+      update();
+    }
+
+    document.addEventListener('pointermove',move);
+    document.addEventListener('pointerup',up);
+  });
+}
+
+function celebrate(){
+  for(let i=0;i<50;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background='hsl('+Math.random()*360+',90%,60%)';
+    c.style.animationDelay=Math.random()*.35+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),2200);
+  }
+}
+
+function showHowToPlay(){
+  const modal=document.getElementById('howToPlayModal');
+  if(modal) modal.classList.add('show');
+}
+function hideHowToPlay(){
+  const modal=document.getElementById('howToPlayModal');
+  if(modal) modal.classList.remove('show');
+}
+function closeHowToPlay(event){
+  if(event.target && event.target.id==='howToPlayModal') hideHowToPlay();
+}
+
+</script>
+</body>
+</html>
