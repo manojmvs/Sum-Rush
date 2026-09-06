@@ -674,9 +674,26 @@ function newChallenge(){
 }
 
 function resetGame(){
+  // Reset the current puzzle without generating a new one.
   slots=[null,null,null,null];
-  document.getElementById('message').textContent='Choose four numbers.';
-  update();
+  levelCompleted=false;
+
+  // Reset the timer completely to 00 : 00 and start it again.
+  startLiveTimer();
+
+  // Reset the current sum and message.
+  const sum=document.getElementById('sum');
+  if(sum){
+    sum.textContent='0';
+    sum.classList.remove('success');
+  }
+
+  const message=document.getElementById('message');
+  if(message) message.textContent='Choose four numbers.';
+
+  // Redraw the current puzzle with all four boxes empty.
+  renderNumbers();
+  renderSlots();
 }
 
 function update(){
@@ -898,29 +915,8 @@ function hideEndScreen(){
 }
 
 function resetFromEnd(){
-  // Close the completion screen and restart the SAME challenge.
   hideEndScreen();
-
-  // Clear the actual game slots used by SUM RUSH.
-  slots=[null,null,null,null];
-  levelCompleted=false;
-
-  // Reset the live sum/message and redraw the four empty boxes.
-  const sum=document.getElementById("sum");
-  if(sum){
-    sum.textContent="0";
-    sum.classList.remove("success");
-  }
-
-  const message=document.getElementById("message");
-  if(message) message.textContent="Choose four numbers.";
-
-  // Reset the timer to 00 : 00 and start immediately.
-  startLiveTimer();
-
-  // Re-render the current puzzle with all four slots empty.
-  renderNumbers();
-  renderSlots();
+  resetGame();
 }
 
 function nextFromEnd(){
